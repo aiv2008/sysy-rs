@@ -6,13 +6,13 @@ pub struct FuncDef{
 }
 
 #[derive(Debug)]
-pub struct FuncType{
-    pub t: Int,
+pub enum FuncType{
+    Int,
 }
 
 #[derive(Debug)]
 pub struct CompUnit{
-    pub fun_def: FuncDef,
+    pub func_def: FuncDef,
 }
 
 #[derive(Debug)]
@@ -22,15 +22,5 @@ pub struct Block{
 
 #[derive(Debug)]
 pub struct Stmt{
-    pub num: Number,
+    pub num: i32,
 }
-
-#[derive(Debug)]
-pub struct Int;
-
-#[derive(Debug)]
-pub struct Number{
-    pub num: IntConst,
-}
-
-type IntConst = i32;
