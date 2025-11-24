@@ -11,13 +11,27 @@ match {
   _
 }
 
-pub CompUnit: CompUnit = <func_def: FuncDef> => CompUnit { <> };
 
+pub CompUnit: CompUnit = {
+  <func_def: FuncDef> => CompUnit { <> },
+  <decl: Decl> => CompUnit { <> },
+}
+//函数声明
 FuncDef: FuncDef = {
   <func_type: FuncType> <ident: Ident> "(" ")" <block: Block> => {
     FuncDef { <> }
   }
 }
+
+//变量声明
+Decl: Decl = {
+  <const_decl: ConstDecl> => Decl {<>},
+  <var_decl: VarDecl> => Decl {<>},
+}
+
+ConstDecl: ConstDecl = "const" BType ConstDef ("," ConstDef)* ";";
+
+BType: String = "int";
 
 FuncType: FuncType = "int" => FuncType::Int;
 
