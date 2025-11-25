@@ -11,29 +11,51 @@ match {
   _
 }
 
-
+//编译单元
 pub CompUnit: CompUnit = {
   <func_def: FuncDef> => CompUnit { <> },
   <decl: Decl> => CompUnit { <> },
 }
-//函数声明
+//函数定义
 FuncDef: FuncDef = {
   <func_type: FuncType> <ident: Ident> "(" ")" <block: Block> => {
     FuncDef { <> }
   }
 }
 
-//变量声明
+//函数类型
+FuncType: FuncType = "int" => FuncType::Int;
+
+//声明
 Decl: Decl = {
   <const_decl: ConstDecl> => Decl {<>},
   <var_decl: VarDecl> => Decl {<>},
 }
 
+//常量声明
 ConstDecl: ConstDecl = "const" BType ConstDef ("," ConstDef)* ";";
 
+//基本类型
 BType: String = "int";
 
-FuncType: FuncType = "int" => FuncType::Int;
+//常数定义
+ConstDef: ConstDef = Ident ("[" ConstExp "]")* "=" ConstInitVal;
+
+//常量初值
+ConstInitVal: ConstInitVal = {
+  <const_exp: ConstExp> => ConstInitVal {<>},
+  "{}" => String,
+  "{" ConstInitVal ("," ConstInitVal)* "}" => ConstInitVal {<>},
+}
+
+
+//变量声明
+VarDecl: VarDecl = BType VarDef  ("," VarDef)* ";";
+
+//变量定义
+VarDef: VarDef = {
+  <ident: Ident> => VarDef { <> }
+}
 
 Block: Block = "{" <stmt: Stmt> "}" => Block { <> };
 
