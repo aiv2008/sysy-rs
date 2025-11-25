@@ -45,7 +45,15 @@ ConstDef: ConstDef = Ident ("[" ConstExp "]")* "=" ConstInitVal;
 ConstInitVal: ConstInitVal = {
   <const_exp: ConstExp> => ConstInitVal {<>},
   "{}" => String,
-  "{" ConstInitVal ("," ConstInitVal)* "}" => ConstInitVal {<>},
+  "{" <first:ConstInitVal> <rest: ("," <item:ConstInitVal>)*> "}" => {
+    let mut list = vec![first];
+    for (_, item) in rest {
+        list.push(item);
+    }
+    // TODO: 根据你的 ConstInitVal 定义，使用 `list` 来构建 ConstInitVal
+    // 示例: ConstInitVal::Array(list) 或 ConstInitVal { elements: list }
+    unimplemented!() // 请替换为实际的 Rust 代码
+  },
 }
 
 
