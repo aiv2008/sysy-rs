@@ -1,5 +1,5 @@
 // lalrpop 里的约定
-use crate::ast::{Block, CompUnit, FuncDef, FuncType, Stmt};
+// use crate::ast::{Block, CompUnit, FuncDef, FuncType, Stmt};
 grammar;
 
 // 约束 lexer 的行为
@@ -52,7 +52,8 @@ ConstInitVal: ConstInitVal = {
     }
     // TODO: 根据你的 ConstInitVal 定义，使用 `list` 来构建 ConstInitVal
     // 示例: ConstInitVal::Array(list) 或 ConstInitVal { elements: list }
-    unimplemented!() // 请替换为实际的 Rust 代码
+    // unimplemented!() // 请替换为实际的 Rust 代码
+    ConstInitVal { elements: list }
   },
 }
 
@@ -63,6 +64,56 @@ VarDecl: VarDecl = BType VarDef  ("," VarDef)* ";";
 //变量定义
 VarDef: VarDef = {
   <ident: Ident> => VarDef { <> }
+}
+
+//变量初值
+InitVal: InitVal = {
+  <exp: Exp> => InitVal {<>} ,
+  "{}" => String,
+  "{" <first:InitVal> <rest: ("," <item:InitVal>)*> "}" => {
+    let mut list = vec![first];
+    for (_, item) in rest {
+        list.push(item);
+    }
+    InitVal { elements: list }
+  },
+}
+
+// 函数定义
+FuncDef: FuncDef = {
+  <func_type: FuncType> <ident: Ident> "()" <block: Block> => FuncDef { FuncDef::defNoParam(func_type, ident, block) },
+  <func_type: FuncType> <ident: Ident> "(" <func_f_params: FuncFParams> ")" <block: Block> => FuncDef { FuncDef::defWithParam(func_type, ident,func_f_params, block) },
+  // FuncType Ident "(" FuncFParams ")" Block => FuncDef { <> }
+}
+
+//函数类型
+FuncType: FuncType = {
+  "void" => String,
+  "int" => String,
+}
+
+// 函数形参表 
+FuncFParams: FuncFParams = FuncFParam ("," FuncFParam )* => FuncFParams { <> };
+
+// 函数形参 
+FuncFParam: FuncFParam = {
+  <b_type:BType> <ident:Ident> => FuncFParam {
+    // TODO: 根据你的 FuncFParam 定义，使用 `b_type` 和 `ident` 来构建 FuncFParam
+    // 示例: FuncFParam::Simple(b_type, ident)
+    //unimplemented!() // 请替换为实际的 Rust 代码
+    FuncFParam::Simple(b_type, ident)
+  },
+  <b_type:BType> <ident:Ident> "[" "]" => FuncFParam {
+    // TODO: 根据你的 FuncFParam 定义，使用 `b_type` 和 `ident` 来构建 FuncFParam
+    // 示例: FuncFParam::ArrayNoSize(b_type, ident)
+    FuncFParam::ArrayNoSize(b_type, ident)
+  },
+  <b_type:BType> <ident:Ident> "[" <exp:Exp> "]" => FuncFParam {
+    // TODO: 根据你的 FuncFParam 定义，使用 `b_type`, `ident` 和 `exp` 来构建 FuncFParam
+    // 示例: FuncFParam::ArrayWithSize(b_type, ident, exp)
+    FuncFParam::ArrayWithSize(b_type, ident, exp)
+  },
+  //BType Ident ['[' ']' { '[' Exp ']' }]
 }
 
 Block: Block = "{" <stmt: Stmt> "}" => Block { <> };
