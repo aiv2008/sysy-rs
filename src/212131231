@@ -1,0 +1,134 @@
+// lalrpop 里的约定
+// use crate::ast::{Block, CompUnit, FuncDef, FuncType, Stmt};
+grammar;
+
+// 约束 lexer 的行为
+match {
+  // 跳过空白符和注释
+  r"\s*" => {},
+  r"//[^\n\r]*[\n\r]*" => {},
+  // 剩下的情况采用默认方式处理
+  _
+}
+
+//编译单元
+pub CompUnit: CompUnit = {
+  <func_def: FuncDef> => CompUnit { <> },
+  <decl: Decl> => CompUnit { <> },
+}
+//函数定义
+FuncDef: FuncDef = {
+  <func_type: FuncType> <ident: Ident> "(" ")" <block: Block> => {
+    FuncDef { <> }
+  }
+}
+
+//函数类型
+FuncType: FuncType = "int" => FuncType::Int;
+
+//声明
+Decl: Decl = {
+  <const_decl: ConstDecl> => Decl {<>},
+  <var_decl: VarDecl> => Decl {<>},
+}
+
+//常量声明
+ConstDecl: ConstDecl = "const" BType ConstDef ("," ConstDef)* ";";
+
+//基本类型
+BType: String = "int";
+
+//常数定义
+ConstDef: ConstDef = Ident ("[" ConstExp "]")* "=" ConstInitVal;
+
+//常量初值
+ConstInitVal: ConstInitVal = {
+  <const_exp: ConstExp> => ConstInitVal {<>},
+  "{}" => String,
+  "{" <first:ConstInitVal> <rest: ("," <item:ConstInitVal>)*> "}" => {
+    let mut list = vec![first];
+    for (_, item) in rest {
+        list.push(item);IF Expr THEN Stmt
+    }
+    // TODO: 根据你的 ConstInitVal 定义，使用 `list` 来构建 ConstInitVal
+    // 示例: ConstInitVal::Array(list) 或 ConstInitVal { elements: list }
+    // unimplemented!() // 请替换为实际的 Rust 代码
+    ConstInitVal { elements: list }
+  },
+}
+
+
+//变量声明
+VarDecl: VarDecl = BType VarDef  ("," VarDef)* ";";
+
+//变量定义
+VarDef: VarDef = {
+  <ident: Ident> => VarDef { <> }
+}
+
+//变量初值
+InitVal: InitVal = {
+  <exp: Exp> => InitVal {<>} ,
+  "{}" => String,
+  "{" <first:InitVal> <rest: ("," <item:InitVal>)*> "}" => {
+    let mut list = vec![first];
+    for (_, item) in rest {
+        list.push(item);
+    }
+    InitVal { elements: list }
+  },
+}
+
+// 函数定义
+FuncDef: FuncDef = {
+  <func_type: FuncType> <ident: Ident> "()" <block: Block> => FuncDef { FuncDef::defNoParam(func_type, ident, block) },
+  <func_type: FuncType> <ident: Ident> "(" <func_f_params: FuncFParams> ")" <block: Block> => FuncDef { FuncDef::defWithParam(func_type, ident,func_f_params, block) },
+  // FuncType Ident "(" FuncFParams ")" Block => FuncDef { <> }
+}
+
+//函数类型
+FuncType: FuncType = {
+  "void" => String,
+  "int" => String,
+}
+
+// 函数形参表 
+FuncFParams: FuncFParams = FuncFParam ("," FuncFParam )* => FuncFParams { <> };
+
+// 函数形参 
+FuncFParam: FuncFParam = {
+  <b_type:BType> <ident:Ident> => FuncFParam {
+    // TODO: 根据你的 FuncFParam 定义，使用 `b_type` 和 `ident` 来构建 FuncFParam
+    // 示例: FuncFParam::Simple(b_type, ident)
+    //unimplemented!() // 请替换为实际的 Rust 代码
+    FuncFParam::Simple(b_type, ident)
+  },
+  <b_type:BType> <ident:Ident> "[" "]" => FuncFParam {
+    // TODO: 根据你的 FuncFParam 定义，使用 `b_type` 和 `ident` 来构建 FuncFParam
+    // 示例: FuncFParam::ArrayNoSize(b_type, ident)
+    FuncFParam::ArrayNoSize(b_type, ident)
+  },
+  <b_type:BType> <ident:Ident> "[" <exp:Exp> "]" => FuncFParam {
+    // TODO: 根据你的 FuncFParam 定义，使用 `b_type`, `ident` 和 `exp` 来构建 FuncFParam
+    // 示例: FuncFParam::ArrayWithSize(b_type, ident, exp)
+    FuncFParam::ArrayWithSize(b_type, ident, exp)
+  },
+  //BType Ident ['[' ']' { '[' Exp ']' }]
+}
+
+Block: Block = "{" <stmt: Stmt> "}" => Block { <> };
+
+Stmt: Stmt = "return" <num: IntConst> ";" => Stmt { <> };
+
+
+// 如果匹配到标识符, 就返回这个字符串
+// 一对尖括号在此处指代的是正则表达式匹配到的字符串 (&str)
+// 关于尖括号到底代表什么, 请 RTFM
+Ident: String = r"[_a-zA-Z][_a-zA-Z0-9]*" => <>.to_string();
+
+// 对整数字面量的处理方式: 把匹配到的字符串按对应进制转换成数字
+IntConst: i32 = {
+  r"[1-9][0-9]*" => i32::from_str_radix(<>, 10).unwrap(),
+  r"0[0-7]*" => i32::from_str_radix(<>, 8).unwrap(),
+  r"0[xX][0-9a-fA-F]+" => i32::from_str_radix(&<>[2..], 16).unwrap(),
+}
