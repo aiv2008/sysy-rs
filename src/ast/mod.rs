@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 #[derive(Debug)]
 pub struct FuncDef{
     pub func_type: String,
@@ -30,14 +32,14 @@ pub enum Stmt{
 
 #[derive(Debug)]
 pub enum PrimaryExp{
-    Number(IntConst),
+    Number(i32),
     Expr,
 }
 
 #[derive(Debug)]
 pub enum UnaryExp {
     PrimaryExp,
-    UnaryOpExp(UnaryOp, UnaryExp),
+    UnaryOpExp(String, Arc<UnaryExp>),
 }
 
 #[derive(Debug)]
