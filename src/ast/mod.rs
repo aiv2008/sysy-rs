@@ -1,15 +1,15 @@
 #[derive(Debug)]
 pub struct FuncDef{
-    pub func_type: FuncType,
+    pub func_type: String,
     pub ident: String,
     pub block: Block
 }
 
 
-#[derive(Debug)]
-pub enum FuncType{
-    Int,
-}
+// #[derive(Debug)]
+// pub enum FuncType{
+//     Int,
+// }
 
 
 #[derive(Debug)]
