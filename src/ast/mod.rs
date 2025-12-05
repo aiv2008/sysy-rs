@@ -25,21 +25,21 @@ pub struct Block{
 }
 
 #[derive(Debug)]
-pub enum Stmt{
+pub struct Stmt{
     // pub num: i32,
-    Expr,
+    pub expr: Expr,
 }
 
 #[derive(Debug)]
 pub enum PrimaryExp{
     Number(i32),
-    Expr,
+    Expr(Box<Expr>),
 }
 
 #[derive(Debug)]
 pub enum UnaryExp {
-    PrimaryExp,
-    UnaryOpExp(String, Arc<UnaryExp>),
+    PrimaryExp(PrimaryExp),
+    UnaryOp(String, Arc<UnaryExp>),
 }
 
 #[derive(Debug)]

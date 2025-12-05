@@ -1,6 +1,7 @@
 // lalrpop 里的约定
 grammar;
-use crate::ast::{CompUnit, FuncDef,  Block, Stmt,Expr,PrimaryExp,UnaryOp,UnaryExp};
+use crate::ast::{CompUnit, FuncDef,  Block, Stmt,Expr,PrimaryExp,UnaryExp};
+use std::sync::Arc;
 
 // 约束 lexer 的行为
 match {
@@ -22,18 +23,18 @@ FuncType: String = "int" => <>.to_string();
 
 Block:Block = "{" <stmt: Stmt> "}" =>  Block {<>};
 
-Stmt:Stmt = "return" <num: IntConst> ";" => Stmt{<>} ;
+Stmt:Stmt = "return" <expr: Expr> ";" => Stmt{<>} ;
 
-PrimaryExp = {
-  IntConst => PrimaryExp::IntConst,
-  "(" <Expr> ")" => PrimaryExp::,
+PrimaryExp: PrimaryExp = {
+  <num: IntConst> => PrimaryExp::Number(num),
+  "(" <expr: Expr> ")" => PrimaryExp::Expr(Box::new(expr)),
 }
 
 Expr: Expr = <unary_exp: UnaryExp> => Expr{<>};
 
-UnaryExp = {
-  PrimaryExp,
-  <UnaryOp> <Expr> => UnaryExp::UnaryOpExp(<>),
+UnaryExp: UnaryExp = {
+  <primary: PrimaryExp> => UnaryExp::PrimaryExp(primary),
+  <op: UnaryOp> <expr: Expr> => UnaryExp::UnaryOp(op, Arc::new(expr.unary_exp)),
 }
 
 
