@@ -2,11 +2,16 @@ use std::sync::Arc;
 
 #[derive(Debug)]
 pub struct FuncDef{
-    pub func_type: String,
+    pub func_type: FuncType,
     pub ident: String,
     pub block: Block
 }
 
+#[derive(Debug)]
+pub enum FuncType{
+    Int,
+    Void,
+}
 
 // #[derive(Debug)]
 // pub enum FuncType{
@@ -39,7 +44,7 @@ pub enum PrimaryExp{
 #[derive(Debug)]
 pub enum UnaryExp {
     PrimaryExp(PrimaryExp),
-    UnaryOp(String, Arc<UnaryExp>),
+    UnaryOp(UnaryOp, Arc<UnaryExp>),
 }
 
 #[derive(Debug)]
@@ -47,3 +52,11 @@ pub struct  Expr{
     pub unary_exp: UnaryExp,
 }
 
+#[derive(Debug)]
+pub enum UnaryOp{
+    ADD,
+    SUB,
+    MULT,
+    DIV,
+    NEQ,
+}
